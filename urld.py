@@ -33,40 +33,59 @@ def obtener_resumen(soup):
     else:
         return "No se encontró resumen."
 
-# Procesar cada URL
-def procesar_pagina(url):
+# Procesar cada URL y guardar en archivo
+def procesar_pagina(url, archivo_resultado):
     try:
         response = requests.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
 
-        # Imprimir URL y código de respuesta HTTP
-        print(f"\nURL: {url}")
-        print(f"Código de respuesta HTTP: {response.status_code}")
+        # Guardar y mostrar URL y código de respuesta HTTP
+        with open(archivo_resultado, 'a') as f:
+            f.write(f"\nURL: {url}\n")
+            f.write(f"Código de respuesta HTTP: {response.status_code}\n")
+            print(f"\nURL: {url}")
+            print(f"Código de respuesta HTTP: {response.status_code}")
 
-        # Imprimir encabezados de forma estructurada
-        print("\n--- Encabezados ---")
-        encabezados = obtener_header(response)
-        for clave, valor in encabezados.items():
-            print(f"{clave}: {valor}")
+            # Guardar y mostrar encabezados HTTP
+            f.write("\n--- Encabezados ---\n")
+            print("\n--- Encabezados ---")
+            encabezados = obtener_header(response)
+            for clave, valor in encabezados.items():
+                f.write(f"{clave}: {valor}\n")
+                print(f"{clave}: {valor}")
 
-        # Imprimir título y resumen
-        print("\n--- Título ---")
-        print(obtener_titulo(soup))
+            # Guardar y mostrar título
+            f.write("\n--- Título ---\n")
+            titulo = obtener_titulo(soup)
+            f.write(f"{titulo}\n")
+            print(f"\n--- Título ---")
+            print(titulo)
 
-        print("\n--- Resumen ---")
-        print(obtener_resumen(soup))
+            # Guardar y mostrar resumen
+            f.write("\n--- Resumen ---\n")
+            resumen = obtener_resumen(soup)
+            f.write(f"{resumen}\n")
+            print(f"\n--- Resumen ---")
+            print(resumen)
 
     except requests.exceptions.RequestException as e:
+        with open(archivo_resultado, 'a') as f:
+            f.write(f"No se pudo procesar la URL {url}. Error: {e}\n")
         print(f"No se pudo procesar la URL {url}. Error: {e}")
 
 # Ruta al archivo con las URLs
 archivo_txt = "urls.txt"
+# Ruta al archivo donde se guardarán los resultados
+archivo_resultado = "resultados.txt"
+
+# Limpiar o crear archivo de resultados
+with open(archivo_resultado, 'w') as f:
+    f.write("Resultados del procesamiento de URLs:\n")
 
 # Leer las URLs y procesarlas
 urls = leer_urls(archivo_txt)
 if urls:
     for url in urls:
-        procesar_pagina(url)
+        procesar_pagina(url, archivo_resultado)
 else:
     print("No se encontraron URLs para procesar.")
-
